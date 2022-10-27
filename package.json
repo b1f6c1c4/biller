@@ -1,0 +1,25 @@
+{
+  "name": "biller",
+  "version": "0.0.0",
+  "description": "generate bill split detail",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/b1f6c1c4/biller.git"
+  },
+  "keywords": [
+    "finance",
+    "accountant",
+    "bill",
+    "money"
+  ],
+  "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/b1f6c1c4/biller/issues"
+  },
+  "homepage": "https://github.com/b1f6c1c4/biller#readme",
+  "dependencies": {
+    "json5": "^2.2.1"
+  }
+}
