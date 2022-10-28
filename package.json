@@ -21,6 +21,7 @@
   "homepage": "https://github.com/b1f6c1c4/biller#readme",
   "dependencies": {
     "dayjs": "^1.11.6",
+    "debug": "^4.3.4",
     "json5": "^2.2.1"
   }
 }

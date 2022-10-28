@@ -1,7 +1,10 @@
+import debug from 'debug';
 import JSON5 from 'json5';
 import { readFile } from 'node:fs/promises';
 import readline from 'node:readline/promises';
 import dayjs from 'dayjs';
+
+const dbg = debug('biller');
 
 // Read data file
 const fn = process.argv[2] || 'data.json5';
@@ -35,7 +38,7 @@ const occupancyHistory = [];
         occupancyHistory.push({
             date: dayjs(date, 'YYYYMMDD'),
             families,
-            persons,
+            persons: new Set(persons),
         });
     }
     const occupancy = new Set(); // must start with empty occupancy
@@ -45,6 +48,7 @@ const occupancyHistory = [];
         if (extraStep && !dd.isSame(extraStep)) {
             // another activity necessary to record the change
             pushToHistory(extraStep, occupancy);
+            dbg('extra', d, extraStep, occupancy);
         }
         const todayOccupancy = new Set(occupancy);
         for (const p in data.activities[d]) {
@@ -87,6 +91,7 @@ const occupancyHistory = [];
         }
         pushToHistory(dd, todayOccupancy);
     }
+    dbg(occupancyHistory);
 }
 
 // Ask for information
@@ -146,6 +151,7 @@ const intervals = [];
         }
         date = date.add(1, 'day');
     }
+    dbg(intervals);
 }
 
 // Compute shares
@@ -195,7 +201,7 @@ function listPersonsInOrder(persons) {
     return str;
 }
 switch (bill.mode) {
-    case 'per-person-per-day':
+    case 'per-person-per-day': {
         const totalShares = []; // [{ duration, n }]
         const familyShares = {}; // { <family>: [{ duration, n }] }
         for (const { head, duration, ref } of intervals) {
@@ -216,5 +222,27 @@ switch (bill.mode) {
             console.log(`${f}: $${amountPerShare}*(${shareToString(familyShares[f])})=$${owes}`);
         }
         break;
+    }
+    case 'per-family-per-day': {
+        const totalShares = []; // [{ duration, n }]
+        const familyShares = {}; // { <family>: [{ duration, n }] }
+        for (const { head, duration, ref } of intervals) {
+            totalShares.push({ duration, n: ref.families.size });
+            for (const f of ref.families) {
+                if (!familyShares[f[0]])
+                    familyShares[f[0]] = [];
+                familyShares[f[0]].push({ duration, n: 1 });
+            }
+            console.log(`${head}: ${listFamiliesInOrder(ref.families)}`);
+        }
+        const amountPerShare = amount / shareToValue(totalShares);
+        console.log(`${bill.desc} per family per day: $${amount}/(${shareToString(totalShares, true)})=$${amountPerShare}`);
+        for (const f in data.families) {
+            if (!familyShares.hasOwnProperty(f))
+                continue;
+            const owes = amountPerShare * shareToValue(familyShares[f]);
+            console.log(`${f}: $${amountPerShare}*(${shareToString(familyShares[f], true)})=$${owes}`);
+        }
+        break;
+    }
 }
-
