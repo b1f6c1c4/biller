@@ -72,7 +72,6 @@
     Bill start date (incl.)? (YYYYMMDD) <b>20220101</b>
     Bill end date (incl.)? (YYYYMMDD) <b>20220131</b>
     Amount? <b>33.12</b>
-    Duration is 31 days, right? <b>(just press enter)</b>
     ========================
     ==== SHARES REPORT =====
     ========================

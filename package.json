@@ -2,6 +2,9 @@
   "name": "biller",
   "version": "0.0.0",
   "description": "generate bill split detail",
+  "bin": {
+    "biller": "./bin/biller.mjs"
+  },
   "main": "index.js",
   "repository": {
     "type": "git",
