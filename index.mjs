@@ -27,6 +27,10 @@ const personToFamily = new Map();
 const occupancyHistory = [];
 {
     function pushToHistory(date, persons) {
+        const prev = occupancyHistory[occupancyHistory.length - 1];
+        if (prev && prev.persons.size === persons.size)
+            if ([...prev.persons].every((p) => persons.has(p)))
+                return;
         const families = new Map();
         for (const p of persons) {
             const f = personToFamily.get(p);
@@ -204,7 +208,16 @@ const billed = [];
             return 'nobody';
         return str;
     }
-    sharesReport += `${bill.desc} bill: ${start.format('YYYYMMDD')}~${end.format('YYYYMMDD')}(${duration}d) ${amount}\n`;
+    function coerceToNearest(fund) {
+        const equalityTolerance = 1e-8;
+        const coercionTolerance = 1e-12;
+        const round = (v, n) => Math.round(v * Math.pow(10, n)) * Math.pow(10, -n);
+        const t = round(fund, -Math.log10(equalityTolerance));
+        const c = round(fund, -Math.log10(coercionTolerance));
+        dbg(fund, t, c);
+        return Math.abs(t - c) < coercionTolerance / 10 ? t : fund;
+    }
+    sharesReport += `${bill.desc} bill: ${start.format('YYYYMMDD')}~${end.format('YYYYMMDD')}(${duration}d) ${coerceToNearest(amount)}\n`;
     sharesReport += `billing method: ${bill.mode}\n`;
     switch (bill.mode) {
         case 'per-person-per-day': {
@@ -220,12 +233,12 @@ const billed = [];
                 sharesReport += `${head}: ${listPersonsInOrder(ref.persons)}\n`;
             }
             const amountPerShare = amount / shareToValue(totalShares);
-            sharesReport += `${bill.desc} per person per day: $${amount}/(${shareToString(totalShares)})=$${amountPerShare}\n`;
+            sharesReport += `${bill.desc} per person per day: $${coerceToNearest(amount)}/(${shareToString(totalShares)})=$${coerceToNearest(amountPerShare)}\n`;
             for (const f in data.families) {
                 if (!familyShares.hasOwnProperty(f))
                     continue;
                 const owes = amountPerShare * shareToValue(familyShares[f]);
-                sharesReport += `${f}: $${amountPerShare}*(${shareToString(familyShares[f])})=$${owes}\n`;
+                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}*(${shareToString(familyShares[f])})=$${coerceToNearest(owes)}\n`;
                 billed.push({ tmpl: data.families[f].tmpl, owes });
             }
             break;
