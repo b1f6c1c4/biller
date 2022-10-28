@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import yaml from 'yaml';
-import Biller from './index';
+import Biller from './index.js';
 
 describe('coerceToNearest', () => {
   test('120.57', () => {
@@ -99,7 +99,7 @@ activities:
       end: '20220131',
       amount: 33.12,
     });
-    expect(sharesReport).toBe(`water bill: 20220101~20220131(31d) 33.12
+    expect(sharesReport).toBe(`water bill: 20220101~20220131(31d) $33.12
 20220101~20220104(4d): Willow, Emersyn
 20220105~20220109(5d): Willow, Emersyn, Mia, Steven
 20220110~20220114(5d): Emersyn, Mia, Steven
@@ -123,7 +123,7 @@ S: $0.36*(5*1+5*1+2*1+15*1)=$9.72
       end: '20220131',
       amount: 38.678,
     });
-    expect(sharesReport).toBe(`internet bill: 20220101~20220131(31d) 38.678
+    expect(sharesReport).toBe(`internet bill: 20220101~20220131(31d) $38.678
 20220101~20220104(4d): W&E
 20220105~20220109(5d): W&E, M&M, S
 20220110~20220114(5d): W&E, M&M, S
@@ -147,7 +147,7 @@ S: $0.466*(5+5+2+15)=$12.582
       end: '20220131',
       amount: 38.678,
     });
-    expect(sharesReport).toBe(`insurance bill: 20220101~20220131(31d) 38.678
+    expect(sharesReport).toBe(`insurance bill: 20220101~20220131(31d) $38.678
 20220101~20220104(4d): Willow, Emersyn
 20220105~20220109(5d): Willow, Emersyn, Mia, Steven
 20220110~20220114(5d): Emersyn, Mia, Steven
@@ -171,7 +171,7 @@ S: $9.6695*1=$9.6695
       end: '20220131',
       amount: 9876,
     });
-    expect(sharesReport).toBe(`rent bill: 20220101~20220131(31d) 9876
+    expect(sharesReport).toBe(`rent bill: 20220101~20220131(31d) $9876
 20220101~20220104(4d): W&E
 20220105~20220109(5d): W&E, M&M, S
 20220110~20220114(5d): W&E, M&M, S

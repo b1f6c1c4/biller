@@ -188,7 +188,7 @@ export default class Biller {
         return 'nobody';
       return str;
     };
-    sharesReport += `${bill.desc} bill: ${start}~${end}(${duration}d) ${Biller.coerceToNearest(amount)}\n`;
+    sharesReport += `${bill.desc} bill: ${start}~${end}(${duration}d) $${Biller.coerceToNearest(amount)}\n`;
     switch (bill.mode) {
       case 'per-person-per-day': {
         const totalShares = []; // [{ duration, n }]
