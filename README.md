@@ -1,5 +1,14 @@
 # biller
 
+[![npm](https://img.shields.io/npm/v/biller.svg?style=flat-square)](https://www.npmjs.com/package/biller)
+[![npm](https://img.shields.io/npm/dt/biller.svg?style=flat-square)](https://www.npmjs.com/package/biller)
+[![GitHub last commit](https://img.shields.io/github/last-commit/b1f6c1c4/biller.svg?style=flat-square)](https://github.com/b1f6c1c4/biller)
+[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/b1f6c1c4/biller.svg?style=flat-square)](https://github.com/b1f6c1c4/biller)
+[![license](https://img.shields.io/github/license/b1f6c1c4/biller.svg?style=flat-square)](https://github.com/b1f6c1c4/biller/blob/master/LICENSE)
+
+[![Appveyor Build](https://img.shields.io/appveyor/build/b1f6c1c4/biller?style=flat-square)](https://ci.appveyor.com/project/b1f6c1c4/biller)
+[![Coveralls](https://img.shields.io/coveralls/github/b1f6c1c4/biller.svg?style=flat-square)](https://coveralls.io/github/b1f6c1c4/biller)
+
 > Split utility bills with your roommate, ACCURATELY
 
 ## Supported bill split modes

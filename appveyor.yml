@@ -1,0 +1,27 @@
+version: 0.0.0.{build}
+
+skip_tags: true
+
+skip_commits:
+  message: /\[ci skip\]|\[skip ci\]/
+
+image: Ubuntu2004
+stack: node node
+
+shallow_clone: true
+clone_depth: 1
+
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: nqTG9NWQXN+92ZzIthTO2QSGRfaNEZA4kr6Tzp4/IPOSQsemwAr1NyEaD1cpExTy
+
+install:
+  - npm ci
+
+build: off
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test --color
+  - npm run coveralls
