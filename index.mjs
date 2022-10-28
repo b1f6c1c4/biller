@@ -221,47 +221,85 @@ const billed = [];
     switch (bill.mode) {
         case 'per-person-per-day': {
             const totalShares = []; // [{ duration, n }]
-            const familyShares = {}; // { <family>: [{ duration, n }] }
+            const familyShares = new Map(); // { <family>: [{ duration, n }] }
             for (const { head, duration, ref } of intervals) {
                 totalShares.push({ duration, n: ref.persons.size });
                 for (const f of ref.families) {
-                    if (!familyShares[f[0]])
-                        familyShares[f[0]] = [];
-                    familyShares[f[0]].push({ duration, n: f[1] });
+                    if (!familyShares.has(f[0]))
+                        familyShares.set(f[0], []);
+                    familyShares.get(f[0]).push({ duration, n: f[1] });
                 }
                 sharesReport += `${head}: ${listPersonsInOrder(ref.persons)}\n`;
             }
             const amountPerShare = amount / shareToValue(totalShares);
             sharesReport += `${bill.desc} per person per day: $${coerceToNearest(amount)}/(${shareToString(totalShares)})=$${coerceToNearest(amountPerShare)}\n`;
             for (const f in data.families) {
-                if (!familyShares.hasOwnProperty(f))
+                if (!familyShares.has(f))
                     continue;
-                const owes = amountPerShare * shareToValue(familyShares[f]);
-                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}*(${shareToString(familyShares[f])})=$${coerceToNearest(owes)}\n`;
+                const owes = amountPerShare * shareToValue(familyShares.get(f));
+                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}*(${shareToString(familyShares.get(f))})=$${coerceToNearest(owes)}\n`;
                 billed.push({ tmpl: data.families[f].tmpl, owes });
             }
             break;
         }
         case 'per-family-per-day': {
             const totalShares = []; // [{ duration, n }]
-            const familyShares = {}; // { <family>: [{ duration, n }] }
+            const familyShares = new Map(); // { <family>: [{ duration, n }] }
             for (const { head, duration, ref } of intervals) {
                 totalShares.push({ duration, n: ref.families.size });
                 for (const f of ref.families) {
-                    if (!familyShares[f[0]])
-                        familyShares[f[0]] = [];
-                    familyShares[f[0]].push({ duration, n: 1 });
+                    if (!familyShares.has(f[0]))
+                        familyShares.set(f[0], [])
+                    familyShares.get(f[0]).push({ duration, n: 1 });
                 }
                 sharesReport += `${head}: ${listFamiliesInOrder(ref.families)}\n`;
             }
             const amountPerShare = amount / shareToValue(totalShares);
-            sharesReport += `${bill.desc} per family per day: $${amount}/(${shareToString(totalShares, true)})=$${amountPerShare}\n`;
+            sharesReport += `${bill.desc} per family per day: $${coerceToNearest(amount)}/(${shareToString(totalShares, true)})=$${coerceToNearest(amountPerShare)}\n`;
             for (const f in data.families) {
-                if (!familyShares.hasOwnProperty(f))
+                if (!familyShares.has(f))
                     continue;
-                const owes = amountPerShare * shareToValue(familyShares[f]);
-                sharesReport += `${f}: $${amountPerShare}*(${shareToString(familyShares[f], true)})=$${owes}\n`;
+                const owes = amountPerShare * shareToValue(familyShares.get(f));
+                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}*(${shareToString(familyShares.get(f), true)})=$${coerceToNearest(owes)}\n`;
                 billed.push({ tmpl: data.families[f].tmpl, owes });
+            }
+            break;
+        }
+        case 'per-person': {
+            const persons = new Set();
+            for (const { head, duration, ref } of intervals) {
+                for (const p of ref.persons)
+                    persons.add(p);
+                sharesReport += `${head}: ${listPersonsInOrder(ref.persons)}\n`;
+            }
+            const amountPerShare = amount / persons.size;
+            sharesReport += `${bill.desc} per person: $${coerceToNearest(amount)}/(${persons.size})=$${coerceToNearest(amountPerShare)}\n`;
+            for (const f in data.families) {
+                const share = data.familes[f].persons.reduce((v, p) => persons.has(p) ? v + 1 : v, 0);
+                if (!share)
+                    continue;
+                const owes = amountPerShare * share;
+                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}*(${share})=$${coerceToNearest(owes)}\n`;
+                billed.push({ tmpl: data.families[f].tmpl, owes });
+            }
+            break;
+        }
+        case 'per-family': {
+            const families = new Set();
+            for (const { head, duration, ref } of intervals) {
+                for (const f of ref.families) {
+                    families.add(f);
+                }
+                sharesReport += `${head}: ${listFamiliesInOrder(ref.families)}\n`;
+            }
+            const totalShares = families.size;
+            const amountPerShare = amount / shareToValue(totalShares);
+            sharesReport += `${bill.desc} per family: $${coerceToNearest(amount)}/(${families.size})=$${coerceToNearest(amountPerShare)}\n`;
+            for (const f in data.families) {
+                if (!families.has(f))
+                    continue;
+                sharesReport += `${f}: $${coerceToNearest(amountPerShare)}`;
+                billed.push({ tmpl: data.families[f].tmpl, owes: amountPerShare });
             }
             break;
         }

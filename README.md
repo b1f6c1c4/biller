@@ -33,13 +33,16 @@
         mode: per-person-per-day
       - desc: internet
         mode: per-family-per-day
+      - desc: insurance
+        mode: per-person
       - desc: rent
         mode: per-family
     ```
 
     - Water usage is proportional to number of people occupied as well as duration of stay, so they shall use `per-person-per-day`.
     - Families watch TV together, so internet connectivity is proportional to number of families as well as duration of stay. That's the case for `per-family-per-day`.
-    - If any person from a family lived in the apartment for any time, that person shall be responsible for the area they occupied, regardless of how long they stayed there. In this situation `per-family` is mostly applicable.
+    - Risks linked to their rental insurance is proportional to how many people lived there, regardless of how long they stayed. So `per-person` is used.
+    - If any person from a family lived in the apartment for any time, that person shall be responsible for the area (bedroom and shared living room) they occupied, regardless of how long they stayed there. In this situation `per-family` is mostly applicable.
 
 3. Finally, they all shall maintain a journal of who is currently living there:
 
