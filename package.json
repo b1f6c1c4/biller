@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "description": "generate bill split detail",
   "bin": {
-    "biller": "./bin/biller.mjs"
+    "biller": "./bin/biller.js"
   },
   "main": "index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/b1f6c1c4/biller.git"
@@ -22,9 +25,13 @@
     "url": "https://github.com/b1f6c1c4/biller/issues"
   },
   "homepage": "https://github.com/b1f6c1c4/biller#readme",
+  "type": "module",
   "dependencies": {
     "dayjs": "^1.11.6",
     "debug": "^4.3.4",
     "yaml": "^2.1.3"
+  },
+  "devDependencies": {
+    "jest": "^29.2.2"
   }
 }

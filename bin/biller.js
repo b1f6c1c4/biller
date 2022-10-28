@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import Biller from '../index.mjs';
+import Biller from '../index.js';
 
 import yaml from 'yaml';
 import { readFile } from 'node:fs/promises';
@@ -25,7 +25,7 @@ if (!process.argv[6]) {
   }
   console.error();
 }
-const bill = data.bills[process.argv[3] || await rl.question('Which bill to generate? ')];
+const billName = process.argv[3] || await rl.question('Which bill to generate? ');
 const start = process.argv[4] || await rl.question('Bill start date (incl.)? (YYYYMMDD) ');
 const end = process.argv[5] || await rl.question('Bill end date (incl.)? (YYYYMMDD) ');
 const amount = +(process.argv[6] || await rl.question('Amount? '));
@@ -34,7 +34,7 @@ rl.close();
 const {
   sharesReport,
   billedReport,
-} = biller.compute({ bill, start, end, amount });
+} = biller.compute({ billName, start, end, amount });
 
 console.log('========================');
 console.log('==== SHARES REPORT =====');
