@@ -218,7 +218,6 @@ const billed = [];
         return Math.abs(t - c) < coercionTolerance / 10 ? t : fund;
     }
     sharesReport += `${bill.desc} bill: ${start.format('YYYYMMDD')}~${end.format('YYYYMMDD')}(${duration}d) ${coerceToNearest(amount)}\n`;
-    sharesReport += `billing method: ${bill.mode}\n`;
     switch (bill.mode) {
         case 'per-person-per-day': {
             const totalShares = []; // [{ duration, n }]
