@@ -3,9 +3,34 @@ import yaml from 'yaml';
 import Biller from './index.js';
 
 describe('coerceToNearest', () => {
-  test('regular', () => {
-    expect(''+Biller.coerceToNearest(23.456)).toBe('23.456');
-    expect(''+Biller.coerceToNearest(23.45600000000005)).toBe('23.456');
+  test('120.57', () => {
+    expect(Biller.coerceToNearest(120.57)).toBe('120.57');
+    expect(Biller.coerceToNearest(120.57000000000049)).toBe('120.57');
+    expect(Biller.coerceToNearest(120.56999999999951)).toBe('120.57');
+    // 120.56999999999950 is actually 120.569999999999495798874704633 so...
+    expect(Biller.coerceToNearest(120.56999999999950)).toBe('120.5699999999995');
+  });
+  test('23.456', () => {
+    expect(Biller.coerceToNearest(23.456)).toBe('23.456');
+    expect(Biller.coerceToNearest(23.45600000000005)).toBe('23.456');
+    expect(Biller.coerceToNearest(23.45599999999995)).toBe('23.456');
+  });
+  test('torture', () => {
+    // 0.1234567899995000 is actually 0.123456789999499993992770896512 so...
+    expect(Biller.coerceToNearest(+0.1234567899995000)).toBe('0.1234567899995');
+    expect(Biller.coerceToNearest(-0.1234567800004999)).toBe('-0.12345678');
+    expect(Biller.coerceToNearest(+0.1234567899989999)).toBe('0.1234567899989999');
+    expect(Biller.coerceToNearest(+0.1234567800010000)).toBe('0.123456780001');
+    expect(Biller.coerceToNearest(+123456.12345678999)).toBe('123456.12345679');
+    expect(Biller.coerceToNearest(-123456.12345678000)).toBe('-123456.12345678');
+    expect(Biller.coerceToNearest(+123456.12345678998)).toBe('123456.12345678998');
+    expect(Biller.coerceToNearest(+123456.12345678001)).toBe('123456.12345678001');
+    expect(Biller.coerceToNearest(+1234567890.1234999)).toBe('1234567890.1234999');
+    expect(Biller.coerceToNearest(-1234567890.1234000)).toBe('-1234567890.1234');
+    // 1234567890.1234997 is actually 1234567890.12349963188171386719 so...
+    expect(Biller.coerceToNearest(+1234567890.1234997)).toBe('1234567890.1234996');
+    // 1234567890.1234001 is actually 1234567890.12340021133422851563 so...
+    expect(Biller.coerceToNearest(+1234567890.1234001)).toBe('1234567890.1234002');
   });
 });
 

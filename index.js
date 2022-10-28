@@ -7,11 +7,11 @@ export default class Biller {
   static coerceToNearest(fund) {
     const equalityTolerance = 1e-8;
     const coercionTolerance = 1e-12;
-    const round = (v, n) => Math.round(v * Math.pow(10, n)) * Math.pow(10, -n);
+    const round = (v, n) => parseFloat(v.toFixed(n));
     const t = round(fund, -Math.log10(equalityTolerance));
     const c = round(fund, -Math.log10(coercionTolerance));
     dbg(fund, t, c);
-    return Math.abs(t - c) < coercionTolerance / 10 ? t : fund;
+    return Math.abs(t - c) < coercionTolerance / 10 ? ''+t : ''+fund;
   };
 
   constructor(data) {
