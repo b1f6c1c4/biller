@@ -244,13 +244,13 @@ export default class Biller {
           sharesReport += `${head}: ${listPersonsInOrder(ref.persons)}\n`;
         }
         const amountPerShare = amount / persons.size;
-        sharesReport += `${bill.desc} per person: $${Biller.coerceToNearest(amount)}/(${persons.size})=$${Biller.coerceToNearest(amountPerShare)}\n`;
+        sharesReport += `${bill.desc} per person: $${Biller.coerceToNearest(amount)}/${persons.size}=$${Biller.coerceToNearest(amountPerShare)}\n`;
         for (const f in this.data.families) {
-          const share = this.data.familes[f].persons.reduce((v, p) => persons.has(p) ? v + 1 : v, 0);
+          const share = this.data.families[f].persons.reduce((v, p) => persons.has(p) ? v + 1 : v, 0);
           if (!share)
             continue;
           const owes = amountPerShare * share;
-          sharesReport += `${f}: $${Biller.coerceToNearest(amountPerShare)}*(${share})=$${Biller.coerceToNearest(owes)}\n`;
+          sharesReport += `${f}: $${Biller.coerceToNearest(amountPerShare)}*${share}=$${Biller.coerceToNearest(owes)}\n`;
           billed.push({ tmpl: this.data.families[f].tmpl, owes });
         }
         break;
@@ -258,18 +258,18 @@ export default class Biller {
       case 'per-family': {
         const families = new Set();
         for (const { head, duration, ref } of intervals) {
-          for (const f of ref.families) {
+          for (const [f, _] of ref.families) {
             families.add(f);
           }
           sharesReport += `${head}: ${listFamiliesInOrder(ref.families)}\n`;
         }
         const totalShares = families.size;
-        const amountPerShare = amount / shareToValue(totalShares);
-        sharesReport += `${bill.desc} per family: $${Biller.coerceToNearest(amount)}/(${families.size})=$${Biller.coerceToNearest(amountPerShare)}\n`;
+        const amountPerShare = amount / totalShares;
+        sharesReport += `${bill.desc} per family: $${Biller.coerceToNearest(amount)}/${families.size}=$${Biller.coerceToNearest(amountPerShare)}\n`;
         for (const f in this.data.families) {
           if (!families.has(f))
             continue;
-          sharesReport += `${f}: $${Biller.coerceToNearest(amountPerShare)}`;
+          sharesReport += `${f}: $${Biller.coerceToNearest(amountPerShare)}\n`;
           billed.push({ tmpl: this.data.families[f].tmpl, owes: amountPerShare });
         }
         break;

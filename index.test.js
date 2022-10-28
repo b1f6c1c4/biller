@@ -109,4 +109,52 @@ S: $0.466*(5+5+2+15)=$12.582
 `);
     expect(billedReport).toBe('');
   });
+
+  test('insurance', () => {
+    const {
+      sharesReport,
+      billedReport,
+    } = biller.compute({
+      billName: 'insurance',
+      start: '20220101',
+      end: '20220131',
+      amount: 38.678,
+    });
+    expect(sharesReport).toBe(`insurance bill: 20220101~20220131(31d) 38.678
+20220101~20220104(4d): Willow, Emersyn
+20220105~20220109(5d): Willow, Emersyn, Mia, Steven
+20220110~20220114(5d): Emersyn, Mia, Steven
+20220115~20220116(2d): Emersyn, Steven
+20220117~20220131(15d): Emersyn, Mia, Steven
+insurance per person: $38.678/4=$9.6695
+W&E: $9.6695*2=$19.339
+M&M: $9.6695*1=$9.6695
+S: $9.6695*1=$9.6695
+`);
+    expect(billedReport).toBe('');
+  });
+
+  test('rent', () => {
+    const {
+      sharesReport,
+      billedReport,
+    } = biller.compute({
+      billName: 'rent',
+      start: '20220101',
+      end: '20220131',
+      amount: 9876,
+    });
+    expect(sharesReport).toBe(`rent bill: 20220101~20220131(31d) 9876
+20220101~20220104(4d): W&E
+20220105~20220109(5d): W&E, M&M, S
+20220110~20220114(5d): W&E, M&M, S
+20220115~20220116(2d): W&E, S
+20220117~20220131(15d): W&E, M&M, S
+rent per family: $9876/3=$3292
+W&E: $3292
+M&M: $3292
+S: $3292
+`);
+    expect(billedReport).toBe('');
+  });
 });
