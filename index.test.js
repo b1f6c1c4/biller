@@ -34,6 +34,33 @@ describe('coerceToNearest', () => {
   });
 });
 
+describe('weird activities', () => {
+  const strip = (activities) => Object.fromEntries(new Biller({
+    families: { T: { persons: ['t1', 't2'] } },
+    bills: [{ desc: 't', mode: 'per-person-per-day' }],
+    activities,
+  }).occupancyHistory.map(({ date, families, persons }) => [
+    date.format('YYYYMMDD'),
+    [...persons.keys()].sort(),
+  ]));
+  test('skips', () => {
+    expect(strip({
+      20220101: { t1: +1, t2: +1 },
+      20220105: { t1: 0, t2: 0 },
+      20220106: { t1: -1, t2: 0 },
+      20220108: { t1: +1 },
+      20220110: { t2: 0 },
+    })).toStrictEqual({
+      20220101: ['t1', 't2'],
+      20220105: [],
+      20220107: ['t2'],
+      20220108: ['t1', 't2'],
+      20220110: ['t1'],
+      20220111: ['t1', 't2'],
+    });
+  });
+});
+
 describe('example families', () => {
   const data = yaml.parse(`
 families:
