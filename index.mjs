@@ -1,5 +1,5 @@
 import debug from 'debug';
-import JSON5 from 'json5';
+import yaml from 'yaml';
 import { readFile } from 'node:fs/promises';
 import readline from 'node:readline/promises';
 import dayjs from 'dayjs';
@@ -7,8 +7,8 @@ import dayjs from 'dayjs';
 const dbg = debug('biller');
 
 // Read data file
-const fn = process.argv[2] || 'data.json5';
-const data = JSON5.parse(await readFile(fn, 'utf-8'));
+const fn = process.argv[2] || 'data.yaml';
+const data = yaml.parse(await readFile(fn, 'utf-8'));
 
 // Verify persons and families
 const personToFamily = new Map();
