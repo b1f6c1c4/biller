@@ -14,7 +14,7 @@ const data = JSON5.parse(await readFile(fn, 'utf-8'));
 const personToFamily = new Map();
 {
     for (const f in data.families)
-        for (const p of data.families[f])
+        for (const p of data.families[f].persons)
             if (personToFamily.has(p)) {
                 console.error(`${p} belongs to multiple families`);
                 process.exit(1);
@@ -101,12 +101,14 @@ let bill, start ,end, amount, duration;
         input: process.stdin,
         output: process.stderr,
     });
-    console.error('List of bills:');
-    for (let i = 0; i < data.bills.length; i++) {
-        const b = data.bills[i];
-        console.error(`[${i}]: ${b.desc} - ${b.mode}`);
+    if (!process.argv[6]) {
+        console.error('List of bills:');
+        for (let i = 0; i < data.bills.length; i++) {
+            const b = data.bills[i];
+            console.error(`[${i}]: ${b.desc} - ${b.mode}`);
+        }
+        console.error();
     }
-    console.error();
     bill = data.bills[process.argv[3] || await rl.question('Which bill to generate? ')];
     start = dayjs(process.argv[4] || await rl.question('Bill start date (incl.)? (YYYYMMDD) '), 'YYYYMMDD');
     end = dayjs(process.argv[5] || await rl.question('Bill end date (incl.)? (YYYYMMDD) '), 'YYYYMMDD');
@@ -154,95 +156,125 @@ const intervals = [];
     dbg(intervals);
 }
 
-// Compute shares
-console.log(`${bill.desc} bill: ${start.format('YYYYMMDD')}~${end.format('YYYYMMDD')}(${duration}d) ${amount}`);
-console.log(`billing method: ${bill.mode}`);
-const shares = new Map();
-function shareToString(share, simplifyOne) {
-    let str = '';
-    for (const { duration, n } of share) {
-        if (!n)
-            continue;
-        if (str)
-            str += '+';
-        if (simplifyOne && n === 1)
-            str += `${duration}`;
-        else
-            str += `${duration}*${n}`;
-    }
-    return str;
-}
-function shareToValue(share) {
-    return share.reduce((v, { duration, n }) => v + duration * n, 0);
-}
-function listFamiliesInOrder(families) {
-    let str = '';
-    for (const f in data.families)
-        if (families.has(f)) {
+// Compute and display shares
+let sharesReport = '';
+const billed = [];
+{
+    function shareToString(share, simplifyOne) {
+        let str = '';
+        for (const { duration, n } of share) {
+            if (!n)
+                continue;
             if (str)
-                str += ', ';
-            str += f;
+                str += '+';
+            if (simplifyOne && n === 1)
+                str += `${duration}`;
+            else
+                str += `${duration}*${n}`;
         }
-    if (!str)
-        return 'nobody';
-    return str;
-}
-function listPersonsInOrder(persons) {
-    let str = '';
-    for (const f in data.families)
-        for (const p of data.families[f])
-            if (persons.has(p)) {
+        return str;
+    }
+    function shareToValue(share) {
+        return share.reduce((v, { duration, n }) => v + duration * n, 0);
+    }
+    function listFamiliesInOrder(families) {
+        let str = '';
+        for (const f in data.families)
+            if (families.has(f)) {
                 if (str)
                     str += ', ';
-                str += p;
+                str += f;
             }
-    if (!str)
-        return 'nobody';
-    return str;
-}
-switch (bill.mode) {
-    case 'per-person-per-day': {
-        const totalShares = []; // [{ duration, n }]
-        const familyShares = {}; // { <family>: [{ duration, n }] }
-        for (const { head, duration, ref } of intervals) {
-            totalShares.push({ duration, n: ref.persons.size });
-            for (const f of ref.families) {
-                if (!familyShares[f[0]])
-                    familyShares[f[0]] = [];
-                familyShares[f[0]].push({ duration, n: f[1] });
-            }
-            console.log(`${head}: ${listPersonsInOrder(ref.persons)}`);
-        }
-        const amountPerShare = amount / shareToValue(totalShares);
-        console.log(`${bill.desc} per person per day: $${amount}/(${shareToString(totalShares)})=$${amountPerShare}`);
-        for (const f in data.families) {
-            if (!familyShares.hasOwnProperty(f))
-                continue;
-            const owes = amountPerShare * shareToValue(familyShares[f]);
-            console.log(`${f}: $${amountPerShare}*(${shareToString(familyShares[f])})=$${owes}`);
-        }
-        break;
+        if (!str)
+            return 'nobody';
+        return str;
     }
-    case 'per-family-per-day': {
-        const totalShares = []; // [{ duration, n }]
-        const familyShares = {}; // { <family>: [{ duration, n }] }
-        for (const { head, duration, ref } of intervals) {
-            totalShares.push({ duration, n: ref.families.size });
-            for (const f of ref.families) {
-                if (!familyShares[f[0]])
-                    familyShares[f[0]] = [];
-                familyShares[f[0]].push({ duration, n: 1 });
-            }
-            console.log(`${head}: ${listFamiliesInOrder(ref.families)}`);
-        }
-        const amountPerShare = amount / shareToValue(totalShares);
-        console.log(`${bill.desc} per family per day: $${amount}/(${shareToString(totalShares, true)})=$${amountPerShare}`);
-        for (const f in data.families) {
-            if (!familyShares.hasOwnProperty(f))
-                continue;
-            const owes = amountPerShare * shareToValue(familyShares[f]);
-            console.log(`${f}: $${amountPerShare}*(${shareToString(familyShares[f], true)})=$${owes}`);
-        }
-        break;
+    function listPersonsInOrder(persons) {
+        let str = '';
+        for (const f in data.families)
+            for (const p of data.families[f].persons)
+                if (persons.has(p)) {
+                    if (str)
+                        str += ', ';
+                    str += p;
+                }
+        if (!str)
+            return 'nobody';
+        return str;
     }
+    sharesReport += `${bill.desc} bill: ${start.format('YYYYMMDD')}~${end.format('YYYYMMDD')}(${duration}d) ${amount}\n`;
+    sharesReport += `billing method: ${bill.mode}\n`;
+    switch (bill.mode) {
+        case 'per-person-per-day': {
+            const totalShares = []; // [{ duration, n }]
+            const familyShares = {}; // { <family>: [{ duration, n }] }
+            for (const { head, duration, ref } of intervals) {
+                totalShares.push({ duration, n: ref.persons.size });
+                for (const f of ref.families) {
+                    if (!familyShares[f[0]])
+                        familyShares[f[0]] = [];
+                    familyShares[f[0]].push({ duration, n: f[1] });
+                }
+                sharesReport += `${head}: ${listPersonsInOrder(ref.persons)}\n`;
+            }
+            const amountPerShare = amount / shareToValue(totalShares);
+            sharesReport += `${bill.desc} per person per day: $${amount}/(${shareToString(totalShares)})=$${amountPerShare}\n`;
+            for (const f in data.families) {
+                if (!familyShares.hasOwnProperty(f))
+                    continue;
+                const owes = amountPerShare * shareToValue(familyShares[f]);
+                sharesReport += `${f}: $${amountPerShare}*(${shareToString(familyShares[f])})=$${owes}\n`;
+                billed.push({ tmpl: data.families[f].tmpl, owes });
+            }
+            break;
+        }
+        case 'per-family-per-day': {
+            const totalShares = []; // [{ duration, n }]
+            const familyShares = {}; // { <family>: [{ duration, n }] }
+            for (const { head, duration, ref } of intervals) {
+                totalShares.push({ duration, n: ref.families.size });
+                for (const f of ref.families) {
+                    if (!familyShares[f[0]])
+                        familyShares[f[0]] = [];
+                    familyShares[f[0]].push({ duration, n: 1 });
+                }
+                sharesReport += `${head}: ${listFamiliesInOrder(ref.families)}\n`;
+            }
+            const amountPerShare = amount / shareToValue(totalShares);
+            sharesReport += `${bill.desc} per family per day: $${amount}/(${shareToString(totalShares, true)})=$${amountPerShare}\n`;
+            for (const f in data.families) {
+                if (!familyShares.hasOwnProperty(f))
+                    continue;
+                const owes = amountPerShare * shareToValue(familyShares[f]);
+                sharesReport += `${f}: $${amountPerShare}*(${shareToString(familyShares[f], true)})=$${owes}\n`;
+                billed.push({ tmpl: data.families[f].tmpl, owes });
+            }
+            break;
+        }
+        default:
+            console.error(`Unknown mode: ${bill.mode}`);
+            break;
+    }
+    dbg(billed);
 }
+
+// Display billed
+let billedReport = '';
+{
+    let str = '';
+    for (const { tmpl, owes } of billed) {
+        const t = typeof tmpl === 'object' ? tmpl[bill.desc] : tmpl;
+        str += t.replace(/\$\{owes\}/g, owes) + '\n';
+    }
+    billedReport = bill.tmpl.replace(/\$\{amount\}/g, amount).replace(/\$\{content\}/g, str);
+}
+
+console.log('========================');
+console.log('==== SHARES REPORT =====');
+console.log('========================');
+console.log(sharesReport);
+
+console.log('========================');
+console.log('==== BILLED REPORT =====');
+console.log('========================');
+console.log(billedReport);
