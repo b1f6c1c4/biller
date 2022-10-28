@@ -48,7 +48,6 @@ const occupancyHistory = [];
         if (extraStep && !dd.isSame(extraStep)) {
             // another activity necessary to record the change
             pushToHistory(extraStep, occupancy);
-            dbg('extra', d, extraStep, occupancy);
         }
         const todayOccupancy = new Set(occupancy);
         for (const p in data.activities[d]) {
@@ -90,6 +89,9 @@ const occupancyHistory = [];
             }
         }
         pushToHistory(dd, todayOccupancy);
+    }
+    if (extraStep) {
+        pushToHistory(extraStep, occupancy);
     }
     dbg(occupancyHistory);
 }
@@ -260,7 +262,7 @@ const billed = [];
 
 // Display billed
 let billedReport = '';
-{
+if (bill.tmpl) {
     let str = '';
     for (const { tmpl, owes } of billed) {
         const t = typeof tmpl === 'object' ? tmpl[bill.desc] : tmpl;
@@ -274,7 +276,9 @@ console.log('==== SHARES REPORT =====');
 console.log('========================');
 console.log(sharesReport);
 
-console.log('========================');
-console.log('==== BILLED REPORT =====');
-console.log('========================');
-console.log(billedReport);
+if (billedReport) {
+    console.log('========================');
+    console.log('==== BILLED REPORT =====');
+    console.log('========================');
+    console.log(billedReport);
+}
