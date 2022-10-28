@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import yaml from 'yaml';
-import Biller from './index.js';
+import Biller from './index';
 
 describe('coerceToNearest', () => {
   test('120.57', () => {

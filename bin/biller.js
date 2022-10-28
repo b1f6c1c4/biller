@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import Biller from '../index.js';
+import Biller from '../index';
 
 import yaml from 'yaml';
 import { readFile } from 'node:fs/promises';
